@@ -1,10 +1,13 @@
 package com.msd.chat.service;
 
 
+import com.msd.chat.domain.RefreshTokenEntity;
 import com.msd.chat.domain.UserEntity;
 import com.msd.chat.exception.BaseException;
 import com.msd.chat.mapper.UserMapper;
 import com.msd.chat.model.request.LoginRequest;
+import com.msd.chat.model.request.LogoutRequest;
+import com.msd.chat.model.request.RefreshTokenRequest;
 import com.msd.chat.model.request.SignUpRequest;
 import com.msd.chat.model.response.TokensResponse;
 import com.msd.chat.model.response.UserResponse;
@@ -24,11 +27,22 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
-    private final GeneralAuthService generalAuthService;
     private final AuthenticationManager authenticationManager;
     private final FileStoreService fileStoreService;
+    private final RefreshTokenService refreshTokenService;
+    private final JwtService jwtService;
     private final UserMapper userMapper;
 
+
+    public TokensResponse createPair(final String username) {
+        RefreshTokenEntity newRefreshToken = refreshTokenService.createRefreshToken(username);
+        String accessToken = jwtService.generateToken(username);
+
+        return TokensResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(newRefreshToken.getToken())
+                .build();
+    }
 
     // sign up
     public TokensResponse signUp(final SignUpRequest request) {
@@ -42,7 +56,7 @@ public class AuthService {
         user = userRepository.save(user);
         fileStoreService.deleteByFile(user.getImage());
 
-        return generalAuthService.createPair(user.getUsername());
+        return createPair(user.getUsername());
     }
 
 
@@ -56,14 +70,31 @@ public class AuthService {
             throw new UsernameNotFoundException("Username or password invalid");
         }
 
-        return generalAuthService.createPair(request.username());
+        return createPair(request.username());
     }
 
 
     // profile
-    public UserResponse profile(final UserDetails userDetails) {
-        UserEntity user = (UserEntity) userDetails;
-
+    public UserResponse profile(final UserEntity user) {
         return userMapper.toResponse(user);
+    }
+
+    public TokensResponse refresh(final RefreshTokenRequest refreshTokenRequest) {
+        String token = refreshTokenRequest.refreshToken();
+
+        RefreshTokenEntity refreshToken = refreshTokenService.findByToken(token);
+
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        UserDetails user = refreshTokenService.getUser(token);
+
+        // delete old token
+        refreshTokenService.deleteToken(refreshToken);
+
+        return createPair(user.getUsername());
+    }
+
+    public void logout(final LogoutRequest refreshTokenRequest) {
+        refreshTokenService.deleteByToken(refreshTokenRequest.refreshToken());
     }
 }

@@ -50,8 +50,8 @@ public class ChatEntity implements Serializable {
 
     @AssertTrue(message = "Chat name cannot be empty")
     private boolean isNameNotEmpty() {
-        return (type == ChatTypes.PRIVATE && name.isEmpty())
-                || (type == ChatTypes.GROUP && !name.isEmpty());
+        return (type == ChatTypes.PRIVATE && (name == null || name.isEmpty()))
+                || (type == ChatTypes.GROUP && name != null && !name.isEmpty());
     }
 
     @PrePersist

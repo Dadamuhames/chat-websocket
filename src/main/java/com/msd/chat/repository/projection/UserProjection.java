@@ -1,8 +1,18 @@
 package com.msd.chat.repository.projection;
 
-import com.msd.chat.domain.UserEntity;
-
+import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record UserProjection(UserEntity user, UUID chatUUID) {
+public interface UserProjection {
+    Long getId();
+
+    UUID getChatUUID();
+
+    String getUsername();
+
+    String getName();
+
+    String getImage();
+
+    LocalDateTime getJoined_At();
 }

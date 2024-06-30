@@ -49,9 +49,7 @@ public class UserEntity implements UserDetails {
 
     private String image;
 
-    // user chats
-    @JsonIgnore
-    @ManyToMany(fetch = FetchType.LAZY)
+    @JsonIgnore @ManyToMany
     private Set<ChatEntity> chats;
 
     @Override
