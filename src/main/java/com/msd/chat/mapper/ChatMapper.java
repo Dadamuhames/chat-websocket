@@ -4,6 +4,7 @@ import com.msd.chat.domain.ChatEntity;
 import com.msd.chat.domain.UserEntity;
 import com.msd.chat.model.response.ChatDetailResponse;
 import com.msd.chat.model.response.ChatResponse;
+import com.msd.chat.model.response.UserResponse;
 import com.msd.chat.repository.projection.ChatProjection;
 import com.msd.chat.service.file.FileGetService;
 import com.msd.chat.utiles.UUIDConverter;
@@ -15,17 +16,37 @@ import org.springframework.stereotype.Component;
 public class ChatMapper {
   private final FileGetService fileGetService;
   private final UUIDConverter uuidConverter;
+  private final UserMapper userMapper;
 
   public ChatDetailResponse toResponsePrivate(final ChatEntity chat, final UserEntity user) {
     String imagePath = fileGetService.getFileAbsoluteUrl(user.getImage(), 500, 500);
+
+    UserResponse response = userMapper.toResponse(user);
 
     return ChatDetailResponse.builder()
         .id(chat.getId())
         .uuid(chat.getUuid())
         .name(user.getName())
         .image(imagePath)
-        .userId(user.getId())
+        .user(response)
         .build();
+  }
+
+  public ChatResponse toResponse(final ChatEntity chat, final UserEntity user) {
+    String name = chat.getName() != null ? chat.getName() : user.getName();
+    String image = chat.getImage() != null ? chat.getImage() : user.getImage();
+
+    String imagePath = fileGetService.getFileAbsoluteUrl(image, 500, 500);
+
+    return ChatResponse.builder()
+            .id(chat.getId())
+            .uuid(chat.getUuid())
+            .name(name)
+            .type(chat.getType())
+            .username(user.getUsername())
+            .image(imagePath)
+            .userId(user.getId())
+            .build();
   }
 
   public ChatResponse toResponse(final ChatProjection chat) {
@@ -42,6 +63,7 @@ public class ChatMapper {
             .username(chat.getUsername())
             .image(imagePath)
             .userId(chat.getUserId())
+            .newMessagesCount(chat.getNewMessagesCount())
             .build();
   }
 }

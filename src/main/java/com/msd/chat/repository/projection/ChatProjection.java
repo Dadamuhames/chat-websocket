@@ -21,4 +21,6 @@ public interface ChatProjection {
   Long getUserId();
 
   String getUserImage();
+
+  Long getNewMessagesCount();
 }

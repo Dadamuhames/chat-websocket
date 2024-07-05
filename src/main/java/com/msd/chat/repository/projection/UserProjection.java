@@ -6,7 +6,7 @@ import java.util.UUID;
 public interface UserProjection {
     Long getId();
 
-    UUID getChatUUID();
+    byte[] getChatUUID();
 
     String getUsername();
 

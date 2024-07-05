@@ -31,6 +31,8 @@ public class ChatEntity implements Serializable {
     @Enumerated(EnumType.STRING)
     private ChatTypes type;
 
+    private boolean active;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<UserEntity> users;

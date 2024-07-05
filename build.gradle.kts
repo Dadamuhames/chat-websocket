@@ -170,6 +170,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	implementation("org.springframework.security:spring-security-messaging:6.3.1")
 }
 
 spotbugs {
