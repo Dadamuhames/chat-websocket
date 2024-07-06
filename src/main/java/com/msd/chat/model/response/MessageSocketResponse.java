@@ -11,4 +11,4 @@ public record MessageSocketResponse(
     String message,
     ChatResponse chat,
     Boolean isChatNew,
-    LocalDateTime createdAt) {}
+    String createdAt) {}

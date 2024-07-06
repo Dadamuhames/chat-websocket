@@ -16,6 +16,6 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
 
     @Query("SELECT m FROM MessageEntity m " +
             "LEFT JOIN UserEntity u ON u.id = :userId " +
-            "WHERE m.chat.id = :chatId AND u NOT MEMBER OF m.readByUsers")
-    List<MessageEntity> findNewForUserByChatId(@Param("chatId") Long chatId, @Param("userId") Long userId);
+            "WHERE m.chat.uuid = :chatUUID AND u NOT MEMBER OF m.readByUsers")
+    List<MessageEntity> findNewForUserByChatId(@Param("chatId") UUID chatUUID, @Param("userId") Long userId);
 }

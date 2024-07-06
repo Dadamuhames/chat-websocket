@@ -1,11 +1,11 @@
 package com.msd.chat.mapper;
 
-import com.msd.chat.domain.ChatEntity;
 import com.msd.chat.domain.MessageEntity;
-import com.msd.chat.model.response.ChatDetailResponse;
+import com.msd.chat.domain.UserEntity;
 import com.msd.chat.model.response.ChatResponse;
 import com.msd.chat.model.response.MessageResponse;
 import com.msd.chat.model.response.MessageSocketResponse;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,9 @@ import org.springframework.stereotype.Component;
 public class MessageMapper {
     private final ChatMapper chatMapper;
 
-    public MessageResponse toResponse(final MessageEntity message) {
+    public MessageResponse toResponse(final MessageEntity message, final UserEntity user) {
+        Boolean isUsersMessage = Objects.equals(user.getId(), message.getFromUser().getId());
+
         return MessageResponse.builder()
                 .id(message.getId())
                 .uuid(message.getUuid())
@@ -22,6 +24,7 @@ public class MessageMapper {
                 .message(message.getMessage())
                 .fromUserId(message.getFromUser().getId())
                 .createdAt(message.getCreatedAt())
+                .isMyMessage(isUsersMessage)
                 .build();
     }
 
@@ -33,6 +36,7 @@ public class MessageMapper {
                 .id(message.getId())
                 .uuid(message.getUuid())
                 .message(message.getMessage())
+                .createdAt(message.getCreatedAt().toString())
                 .isChatNew(isChatNew)
                 .chat(chat)
                 .build();

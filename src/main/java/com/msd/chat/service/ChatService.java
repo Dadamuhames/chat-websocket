@@ -28,7 +28,6 @@ public class ChatService {
   private final ChatRepository chatRepository;
   private final UserRepository userRepository;
   private final ChatMapper chatMapper;
-  private final MessageService messageService;
 
   public Page<ChatResponse> list(final UserEntity user, final Pageable pageable) {
     Page<ChatProjection> chats = chatRepository.findByUserId(user.getId(), pageable);
@@ -43,8 +42,6 @@ public class ChatService {
             .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
 
     UserEntity companion = userRepository.findCompanionByChat(chat.getId(), user.getId());
-
-    messageService.readNewMessages(chat.getId(), user);
 
     return chatMapper.toResponsePrivate(chat, companion);
   }
