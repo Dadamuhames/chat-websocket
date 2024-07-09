@@ -5,10 +5,7 @@ import com.msd.chat.domain.RefreshTokenEntity;
 import com.msd.chat.domain.UserEntity;
 import com.msd.chat.exception.BaseException;
 import com.msd.chat.mapper.UserMapper;
-import com.msd.chat.model.request.LoginRequest;
-import com.msd.chat.model.request.LogoutRequest;
-import com.msd.chat.model.request.RefreshTokenRequest;
-import com.msd.chat.model.request.SignUpRequest;
+import com.msd.chat.model.request.*;
 import com.msd.chat.model.response.TokensResponse;
 import com.msd.chat.model.response.UserResponse;
 import com.msd.chat.repository.UserRepository;
@@ -73,12 +70,29 @@ public class AuthService {
         return createPair(request.username());
     }
 
-
     // profile
     public UserResponse profile(final UserEntity user) {
         return userMapper.toResponse(user);
     }
 
+
+    // profile update
+    public UserResponse profileUpdate(final ProfileEditRequest request, final UserEntity user) {
+        Boolean usernameExists = userRepository.existsByUsernameAndIdNot(request.username(), user.getId());
+
+        if (usernameExists) {
+            throw new BaseException(Map.of("error", "Username already in use"), 403);
+        }
+
+        UserEntity updatedUser = userMapper.fromProfileUpdateRequest(request, user);
+
+        updatedUser = userRepository.save(updatedUser);
+
+        return userMapper.toResponse(updatedUser);
+    }
+
+
+    // token refresh
     public TokensResponse refresh(final RefreshTokenRequest refreshTokenRequest) {
         String token = refreshTokenRequest.refreshToken();
 

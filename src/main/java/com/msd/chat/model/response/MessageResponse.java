@@ -12,4 +12,5 @@ public record MessageResponse(
     String message,
     Long fromUserId,
     Boolean isMyMessage,
+    Boolean isReadByUser,
     LocalDateTime createdAt) {}

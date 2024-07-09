@@ -16,6 +16,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Boolean existsByUsername(String username);
 
+    Boolean existsByUsernameAndIdNot(String username, Long id);
+
     @Query(value = "SELECT DISTINCT user_entity.*, chat_entity.uuid AS chatUUID FROM user_entity " +
             "LEFT JOIN chat_entity ON " +
             "EXISTS (SELECT 1 FROM chat_entity_users c WHERE c.chat_entity_id = chat_entity.id " +

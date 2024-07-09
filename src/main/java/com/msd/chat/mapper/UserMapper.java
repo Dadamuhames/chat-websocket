@@ -1,6 +1,7 @@
 package com.msd.chat.mapper;
 
 import com.msd.chat.domain.UserEntity;
+import com.msd.chat.model.request.ProfileEditRequest;
 import com.msd.chat.model.request.SignUpRequest;
 import com.msd.chat.model.response.UserResponse;
 import com.msd.chat.repository.projection.UserProjection;
@@ -29,6 +30,23 @@ public class UserMapper {
         .active(true)
         .build();
   }
+
+
+  public UserEntity fromProfileUpdateRequest(final ProfileEditRequest request, final UserEntity user) {
+    String image = request.image() == null ? user.getImage() : request.image();
+
+    System.out.println(user.getPassword());
+
+    return UserEntity.builder()
+            .id(user.getId())
+            .username(request.username())
+            .name(request.name())
+            .password(user.getPassword())
+            .active(true)
+            .image(image)
+            .build();
+  }
+
 
   public UserResponse toResponse(final UserProjection userProjection) {
     String imgPath = fileGetService.getFileAbsoluteUrl(userProjection.getImage(), 500, 500);

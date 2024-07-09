@@ -23,14 +23,14 @@ public class MessageController {
 
   @GetMapping("/{chatUUID}")
   public ResponseEntity<Page<MessageResponse>> chatMessagesList(
-      @PathVariable("chatUUID") UUID uuid,
+      @PathVariable("chatUUID") UUID chatUUID,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int pageSize,
       @AuthenticationPrincipal UserEntity user) {
 
     Pageable pageable = PageRequest.of(page, pageSize).withSort(Sort.by("id").descending());
 
-    Page<MessageResponse> messages = messageService.getChatMessages(uuid, user, pageable);
+    Page<MessageResponse> messages = messageService.getChatMessages(chatUUID, user, pageable);
 
     return ResponseEntity.ok(messages);
   }
@@ -42,5 +42,12 @@ public class MessageController {
     MessageResponse response = messageService.create(request, user);
 
     return ResponseEntity.status(201).body(response);
+  }
+
+  @PostMapping("/{uuid}/read")
+  public ResponseEntity<?> read(@PathVariable("uuid") UUID uuid, @AuthenticationPrincipal UserEntity user) {
+    messageService.readMessageByUUID(uuid, user);
+
+    return ResponseEntity.status(204).build();
   }
 }

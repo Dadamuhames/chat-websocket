@@ -43,12 +43,12 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
           "LEFT JOIN chat_entity_users c_u ON " +
           "(c_u.chat_entity_id = c.id AND c_u.users_id != :userId AND c.type = 'PRIVATE') " +
           "LEFT JOIN user_entity u ON u.id = c_u.users_id " +
-          "LEFT JOIN message_entity m ON m.chat_id = c.id AND " +
+          "LEFT JOIN message_entity m ON m.from_user_id != :userId AND m.chat_id = c.id AND " +
           "NOT EXISTS (SELECT 1 FROM message_entity_read_by_users m_read_by " +
           "WHERE m_read_by.message_entity_id = m.id AND m_read_by.read_by_users_id = :userId) " +
           "WHERE c.active = 1 AND EXISTS " +
           "(SELECT 1 FROM chat_entity_users c_u2 WHERE c_u2.chat_entity_id = c.id AND c_u2.users_id = :userId) " +
-          "GROUP BY  c.id, c.uuid, c.name, c.image, c.type, u.name, u.username, u.id, u.image", nativeQuery = true)
+          "GROUP BY  c.id, c.name, c.image, c.type, u.name, u.username, u.id, u.image", nativeQuery = true)
   Page<ChatProjection> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
 

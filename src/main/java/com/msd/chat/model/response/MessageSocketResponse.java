@@ -11,4 +11,5 @@ public record MessageSocketResponse(
     String message,
     ChatResponse chat,
     Boolean isChatNew,
+    Long newMessagesCount,
     String createdAt) {}
