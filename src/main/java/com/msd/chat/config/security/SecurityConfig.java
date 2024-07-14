@@ -59,7 +59,7 @@ public class SecurityConfig {
   CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
-    configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "https://7691-84-54-120-134.ngrok-free.app"));
+    configuration.setAllowedOrigins(List.of("http://127.0.0.1:5500", "https://2846-84-54-120-230.ngrok-free.app"));
     configuration.addAllowedMethod("*");
     configuration.addAllowedHeader("*");
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

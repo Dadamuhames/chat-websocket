@@ -10,6 +10,7 @@ public record MessageSocketResponse(
     UUID uuid,
     String message,
     ChatResponse chat,
+    UserResponse fromUser,
     Boolean isChatNew,
     Long newMessagesCount,
     String createdAt) {}

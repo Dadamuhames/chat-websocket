@@ -46,6 +46,10 @@ public class UserEntity implements UserDetails {
 
   @JsonIgnore @ManyToMany private Set<ChatEntity> chats;
 
+  @JsonIgnore
+  @OneToMany(mappedBy = "admin", cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+  private Set<ChatEntity> createdChats;
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     return List.of(new SimpleGrantedAuthority("ROLE_USER"));

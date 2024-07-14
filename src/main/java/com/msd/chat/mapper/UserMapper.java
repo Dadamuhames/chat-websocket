@@ -4,6 +4,7 @@ import com.msd.chat.domain.UserEntity;
 import com.msd.chat.model.request.ProfileEditRequest;
 import com.msd.chat.model.request.SignUpRequest;
 import com.msd.chat.model.response.UserResponse;
+import com.msd.chat.model.response.UserSelect2Response;
 import com.msd.chat.repository.projection.UserProjection;
 import com.msd.chat.service.file.FileGetService;
 import com.msd.chat.utiles.UUIDConverter;
@@ -19,6 +20,14 @@ public class UserMapper {
   private final PasswordEncoder passwordEncoder;
   private final UUIDConverter uuidConverter;
 
+
+  public UserSelect2Response toSelect2Response(final UserEntity user) {
+    return UserSelect2Response.builder()
+            .id(user.getId())
+            .text(user.getUsername())
+            .build();
+  }
+
   public UserEntity fromSignUpRequest(final SignUpRequest signUpRequest) {
     String password = passwordEncoder.encode(signUpRequest.password());
 
@@ -33,9 +42,7 @@ public class UserMapper {
 
 
   public UserEntity fromProfileUpdateRequest(final ProfileEditRequest request, final UserEntity user) {
-    String image = request.image() == null ? user.getImage() : request.image();
-
-    System.out.println(user.getPassword());
+    String image = request.image() == null || request.image().isEmpty() ? user.getImage() : request.image();
 
     return UserEntity.builder()
             .id(user.getId())
@@ -60,7 +67,6 @@ public class UserMapper {
         .id(userProjection.getId())
         .name(userProjection.getName())
         .username(userProjection.getUsername())
-        .joinedAt(userProjection.getJoined_At())
         .image(imgPath)
         .chatUUID(uuid)
         .build();
@@ -77,7 +83,6 @@ public class UserMapper {
         .id(user.getId())
         .name(user.getName())
         .username(user.getUsername())
-        .joinedAt(user.getJoinedAt())
         .image(imgPath)
         .chatUUID(chatUUID)
         .build();

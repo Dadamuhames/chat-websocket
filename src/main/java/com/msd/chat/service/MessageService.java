@@ -3,6 +3,7 @@ package com.msd.chat.service;
 import com.msd.chat.domain.ChatEntity;
 import com.msd.chat.domain.MessageEntity;
 import com.msd.chat.domain.UserEntity;
+import com.msd.chat.domain.enums.ChatTypes;
 import com.msd.chat.exception.BaseException;
 import com.msd.chat.exception.ResourceNotFoundException;
 import com.msd.chat.mapper.MessageMapper;
@@ -13,6 +14,8 @@ import com.msd.chat.model.response.MessageSocketResponse;
 import com.msd.chat.repository.ChatRepository;
 import com.msd.chat.repository.MessageRepository;
 import com.msd.chat.repository.UserRepository;
+
+import java.time.LocalDateTime;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -27,7 +30,6 @@ public class MessageService {
   private final MessageRepository messageRepository;
   private final ChatRepository chatRepository;
   private final MessageMapper messageMapper;
-  private final UserRepository userRepository;
   private final SimpMessagingTemplate messagingTemplate;
 
   public void sendOnRead(final String username, final List<UUID> uuids, final UUID chatUUID) {
@@ -104,18 +106,18 @@ public class MessageService {
   public MessageResponse create(final MessageCreateRequest request, final UserEntity user) {
     ChatEntity chat =
         chatRepository
-            .findByUserIdAndUUID(request.chatUUID(), user.getId())
+            .findByUUIDAndUserId(request.chatUUID(), user.getId())
             .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
-
-    UserEntity companionUser = userRepository.findCompanionByChat(chat.getId(), user.getId());
 
     boolean newChat = false;
 
     if (!chat.isActive()) {
       chat.setActive(true);
-      chat = chatRepository.save(chat);
       newChat = true;
     }
+
+    chat.setLastMessageAt(LocalDateTime.now());
+    chat = chatRepository.save(chat);
 
     MessageEntity message =
         MessageEntity.builder().message(request.message()).fromUser(user).chat(chat).build();
@@ -126,8 +128,14 @@ public class MessageService {
 
     MessageSocketResponse socketResponse = messageMapper.toSocketResponse(message, newMessagesCount, newChat);
 
-    messagingTemplate.convertAndSendToUser(
-        companionUser.getUsername(), "/messages", socketResponse);
+    Set<UserEntity> companions = chat.getUsers();
+
+    for(UserEntity companion : companions) {
+      if(!companion.getId().equals(user.getId())) {
+        messagingTemplate.convertAndSendToUser(
+                companion.getUsername(), "/messages", socketResponse);
+      }
+    }
 
     return messageMapper.toResponse(message, user);
   }

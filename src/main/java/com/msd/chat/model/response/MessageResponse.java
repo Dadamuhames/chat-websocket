@@ -11,6 +11,7 @@ public record MessageResponse(
     UUID chatUUID,
     String message,
     Long fromUserId,
+    UserResponse fromUser,
     Boolean isMyMessage,
     Boolean isReadByUser,
     LocalDateTime createdAt) {}

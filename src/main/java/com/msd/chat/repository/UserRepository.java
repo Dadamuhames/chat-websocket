@@ -30,6 +30,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Page<UserProjection> search(@Param("search") String search, @Param("id") Long id, Pageable pageable);
 
 
+    @Query("SELECT u FROM UserEntity u WHERE u.username LIKE %:search% AND u.id != :id")
+    Page<UserEntity> searchForSelect2(@Param("search") String search, @Param("id") Long id, Pageable pageable);
+
+
     @Query("SELECT u FROM UserEntity u LEFT JOIN FETCH ChatEntity c ON c.id = :chatId " +
             "WHERE u MEMBER OF c.users AND u.id != :userId")
     UserEntity findCompanionByChat(@Param("chatId") Long chatId, @Param("userId") Long userId);

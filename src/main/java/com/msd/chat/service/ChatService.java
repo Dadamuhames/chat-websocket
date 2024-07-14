@@ -6,19 +6,19 @@ import com.msd.chat.domain.enums.ChatTypes;
 import com.msd.chat.exception.BaseException;
 import com.msd.chat.exception.ResourceNotFoundException;
 import com.msd.chat.mapper.ChatMapper;
+import com.msd.chat.model.request.GroupChatCreateRequest;
 import com.msd.chat.model.request.PrivateChatCreateRequest;
 import com.msd.chat.model.response.ChatDetailResponse;
 import com.msd.chat.model.response.ChatResponse;
 import com.msd.chat.repository.ChatRepository;
 import com.msd.chat.repository.UserRepository;
 import com.msd.chat.repository.projection.ChatProjection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +28,7 @@ public class ChatService {
   private final ChatRepository chatRepository;
   private final UserRepository userRepository;
   private final ChatMapper chatMapper;
+  private final SimpMessagingTemplate messagingTemplate;
 
   public Page<ChatResponse> list(final UserEntity user, final Pageable pageable) {
     Page<ChatProjection> chats = chatRepository.findByUserId(user.getId(), pageable);
@@ -35,14 +36,17 @@ public class ChatService {
     return chats.map(chatMapper::toResponse);
   }
 
-  public ChatDetailResponse onePrivate(final UUID uuid, final UserEntity user) {
+  public ChatDetailResponse one(final UUID uuid, final UserEntity user) {
     ChatEntity chat =
         chatRepository
             .findByUUIDAndUserId(uuid, user.getId())
             .orElseThrow(() -> new ResourceNotFoundException("Chat not found"));
 
-    UserEntity companion = userRepository.findCompanionByChat(chat.getId(), user.getId());
+    // group chat
+    if (chat.getType() == ChatTypes.GROUP) return chatMapper.toResponseGroup(chat);
 
+    // private chat
+    UserEntity companion = userRepository.findCompanionByChat(chat.getId(), user.getId());
     return chatMapper.toResponsePrivate(chat, companion);
   }
 
@@ -76,5 +80,49 @@ public class ChatService {
     chatRepository.save(chat);
 
     return chatMapper.toResponsePrivate(chat, userToChatWith);
+  }
+
+  @Transactional
+  public ChatEntity createGroup(final GroupChatCreateRequest request, final UserEntity user) {
+    Set<UserEntity> users = new HashSet<>(userRepository.findAllById(request.usersId()));
+
+    if (users.isEmpty()) {
+      throw new BaseException(Map.of("error", "Users count invalid"), 403);
+    }
+
+    users.add(user);
+
+    ChatEntity chat =
+        ChatEntity.builder()
+            .name(request.name())
+            .image(request.image())
+            .type(ChatTypes.GROUP)
+            .active(true)
+            .admin(user)
+            .lastMessageAt(LocalDateTime.now())
+            .build();
+
+    chat = chatRepository.save(chat);
+    chat.setUsers(users);
+    chat = chatRepository.save(chat);
+
+    return chat;
+  }
+
+  public ChatDetailResponse createGroupAndSend(
+      final GroupChatCreateRequest request, final UserEntity user) {
+
+    ChatEntity chat = createGroup(request, user);
+
+    ChatDetailResponse response = chatMapper.toResponseGroup(chat);
+
+    for (UserEntity userEntity : chat.getUsers()) {
+      if (!userEntity.getId().equals(user.getId())) {
+        messagingTemplate.convertAndSendToUser(
+            userEntity.getUsername(), "/groups/created", response);
+      }
+    }
+
+    return response;
   }
 }

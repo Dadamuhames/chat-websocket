@@ -13,4 +13,5 @@ public record ChatResponse(
     String image,
     String username,
     ChatTypes type,
+    String lastMessage,
     Long newMessagesCount) {}

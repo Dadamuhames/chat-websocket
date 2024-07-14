@@ -1,7 +1,7 @@
 package com.msd.chat.controller;
 
-
 import com.msd.chat.domain.UserEntity;
+import com.msd.chat.model.request.GroupChatCreateRequest;
 import com.msd.chat.model.request.PrivateChatCreateRequest;
 import com.msd.chat.model.response.ChatDetailResponse;
 import com.msd.chat.model.response.ChatResponse;
@@ -21,38 +21,47 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/chats")
 public class ChatController {
-    private final ChatService chatService;
+  private final ChatService chatService;
 
+  @GetMapping({"", "/"})
+  public ResponseEntity<Page<ChatResponse>> list(
+      @AuthenticationPrincipal UserEntity user,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int pageSize) {
 
-    @GetMapping({"", "/"})
-    public ResponseEntity<Page<ChatResponse>> list(@AuthenticationPrincipal UserEntity user,
-                                  @RequestParam(defaultValue = "0") int page,
-                                  @RequestParam(defaultValue = "20") int pageSize) {
+    Pageable pageable = PageRequest.of(page, pageSize);
 
-        Pageable pageable = PageRequest.of(page, pageSize);
+    Page<ChatResponse> chats = chatService.list(user, pageable);
 
-        Page<ChatResponse> chats = chatService.list(user, pageable);
+    return ResponseEntity.ok(chats);
+  }
 
-        return ResponseEntity.ok(chats);
-    }
+  @GetMapping("/{uuid}")
+  public ResponseEntity<ChatDetailResponse> one(
+      @PathVariable("uuid") UUID uuid, @AuthenticationPrincipal UserEntity user) {
 
+    ChatDetailResponse response = chatService.one(uuid, user);
 
-    @GetMapping("/{uuid}")
-    public ResponseEntity<ChatDetailResponse> one(@PathVariable("uuid") UUID uuid,
-                                                  @AuthenticationPrincipal UserEntity user) {
+    return ResponseEntity.ok(response);
+  }
 
-        ChatDetailResponse response = chatService.onePrivate(uuid, user);
+  @PostMapping("/createPrivate")
+  public ResponseEntity<?> createPrivate(
+      @Valid @RequestBody PrivateChatCreateRequest request,
+      @AuthenticationPrincipal UserEntity user) {
 
-        return ResponseEntity.ok(response);
-    }
+    ChatDetailResponse response = chatService.createPrivate(request, user);
 
+    return ResponseEntity.status(201).body(response);
+  }
 
-    @PostMapping("/createPrivate")
-    public ResponseEntity<?> createPrivate(@Valid @RequestBody PrivateChatCreateRequest request,
-                                    @AuthenticationPrincipal UserEntity user) {
+  @PostMapping("/createGroup")
+  private ResponseEntity<?> createGroup(
+      @Valid @RequestBody GroupChatCreateRequest request,
+      @AuthenticationPrincipal UserEntity user) {
 
-        ChatDetailResponse response = chatService.createPrivate(request, user);
+    ChatDetailResponse response = chatService.createGroupAndSend(request, user);
 
-        return ResponseEntity.status(201).body(response);
-    }
+    return ResponseEntity.status(201).body(response);
+  }
 }

@@ -9,6 +9,7 @@ import lombok.*;
 import org.apache.catalina.User;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -33,6 +34,10 @@ public class ChatEntity implements Serializable {
 
     private boolean active;
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "admin_id")
+    private UserEntity admin;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY)
     private Set<UserEntity> users;
@@ -43,12 +48,7 @@ public class ChatEntity implements Serializable {
 
     private String image;
 
-    // validation
-    @AssertTrue(message = "User count invalid")
-    private boolean isUserCountValid() {
-        return (type == ChatTypes.PRIVATE && users.size() == 2)
-                || (type == ChatTypes.GROUP && !users.isEmpty());
-    }
+    private LocalDateTime lastMessageAt;
 
     @AssertTrue(message = "Chat name cannot be empty")
     private boolean isNameNotEmpty() {

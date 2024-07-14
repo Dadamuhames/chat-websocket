@@ -32,6 +32,19 @@ public class ChatMapper {
         .build();
   }
 
+
+  public ChatDetailResponse toResponseGroup(final ChatEntity chat) {
+    String imagePath = fileGetService.getFileAbsoluteUrl(chat.getImage(), 500, 500);
+
+    return ChatDetailResponse.builder()
+            .id(chat.getId())
+            .uuid(chat.getUuid())
+            .name(chat.getName())
+            .image(imagePath)
+            .build();
+  }
+
+
   public ChatResponse toResponse(final ChatEntity chat, final UserEntity user) {
     String name = chat.getName() != null ? chat.getName() : user.getName();
     String image = chat.getImage() != null ? chat.getImage() : user.getImage();
@@ -64,6 +77,7 @@ public class ChatMapper {
             .image(imagePath)
             .userId(chat.getUserId())
             .newMessagesCount(chat.getNewMessagesCount())
+            .lastMessage(chat.getLastMessage())
             .build();
   }
 }

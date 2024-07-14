@@ -1,6 +1,5 @@
 package com.msd.chat.model.request;
 
-
 import lombok.Builder;
 
 @Builder

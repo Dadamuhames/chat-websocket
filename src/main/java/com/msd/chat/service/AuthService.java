@@ -88,6 +88,10 @@ public class AuthService {
 
         updatedUser = userRepository.save(updatedUser);
 
+        if(request.image() != null && !request.image().isEmpty()) {
+            fileStoreService.deleteByFile(request.image());
+        }
+
         return userMapper.toResponse(updatedUser);
     }
 
