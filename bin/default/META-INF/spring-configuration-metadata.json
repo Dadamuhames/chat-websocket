@@ -1,0 +1,17 @@
+{
+  "groups": [
+    {
+      "name": "upload",
+      "type": "com.msd.chat.config.properties.UploadProperties",
+      "sourceType": "com.msd.chat.config.properties.UploadProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "upload.url",
+      "type": "java.lang.String",
+      "sourceType": "com.msd.chat.config.properties.UploadProperties"
+    }
+  ],
+  "hints": []
+}
